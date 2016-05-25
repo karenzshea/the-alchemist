@@ -5,6 +5,7 @@
 #include <protozero/pbf_writer.hpp>
 #include <protozero/varint.hpp>
 
+void writetoFile(std::string StrToWrite, ::FILE* FileToWrite);
 using AutoclosingFile = std::unique_ptr<::FILE, decltype(&::fclose)>;
 
 int main() {
@@ -13,17 +14,27 @@ int main() {
 
     using Buffer=std::string;
     Buffer thebytes;
-    protozero::pbf_writer bytespbf(thebytes);
 
-    bytespbf.add_uint64(1, 42);
-    bytespbf.add_uint64(2, 590);
-    bytespbf.add_uint32(3, 60);
+    {
+        protozero::pbf_writer bytespbf(thebytes);
+
+        bytespbf.add_uint64(1, 42);
+        bytespbf.add_uint64(2, 590);
+        bytespbf.add_uint32(3, 60);
+    }
 
     Buffer thesize;
     protozero::write_varint(std::back_inserter(thesize), 3);
     protozero::write_varint(std::back_inserter(thesize), 1);
 
-    const auto count = ::fwrite(thebytes.data(), sizeof(char), thebytes.size(), testOutputFile.get());
-    if (count != thebytes.size()) std::quick_exit(EXIT_FAILURE);
+    writetoFile(thesize, testOutputFile.get());
+    writetoFile(thebytes, testOutputFile.get());
+
+}
+
+void writetoFile(std::string StrToWrite, ::FILE* FileToWrite)
+{
+    const auto count = ::fwrite(StrToWrite.data(), sizeof(char), StrToWrite.size(), FileToWrite);
+    if (count != StrToWrite.size()) std::quick_exit(EXIT_FAILURE);
     ::puts("tada\n");
 }

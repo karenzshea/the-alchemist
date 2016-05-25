@@ -1,0 +1,18 @@
+// schema for csv to pbf schema
+
+package speed;
+
+message Line {
+    required uint64 fromNode = 1;
+    required uint64 toNode = 2;
+    required uint32 speed = 3;
+}
+
+message Header {
+    required uint32 numLineBundles = 1;
+    required uint32 numLinesPerBundle = 2;
+}
+
+message LineBundle {
+    repeated Line lines = 1;
+}
