@@ -1,8 +1,12 @@
-#include <memory>
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <memory>
+#include <iostream>
+
 #include <protozero/pbf_writer.hpp>
+
+#include "csv.h"
 
 void writetoFile(std::string StrToWrite, ::FILE* FileToWrite);
 using AutoclosingFile = std::unique_ptr<::FILE, decltype(&::fclose)>;
@@ -32,6 +36,10 @@ int main() {
     writetoFile(thesize, testOutputFile.get());
     writetoFile(thebytes, testOutputFile.get());
 
+
+    csv::forEachLine(std::cin, [](auto&& line) {
+      std::cout << "parsed: " << line << std::endl;
+    });
 }
 
 void writetoFile(std::string StrToWrite, ::FILE* FileToWrite)
