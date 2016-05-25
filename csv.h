@@ -41,11 +41,11 @@ void forEachLine(std::istream& stream, Fn fn) {
     const auto ok = parse(it, last, (ulong_long >> ',' >> ulong_long >> ',' >> ulong_), into);
 
     if (!ok || it != last) {
-      std::fprintf(stderr, "Error: unable to parse file");
+      std::fprintf(stderr, "Error: unable to parse file\n");
       std::quick_exit(EXIT_FAILURE);
     }
 
-    (void)fn(std::move(line));
+    (void)fn(std::move(into));
   }
 }
 }
