@@ -3,7 +3,6 @@
 #include <stdlib.h>
 
 #include <protozero/pbf_writer.hpp>
-#include <protozero/varint.hpp>
 
 void writetoFile(std::string StrToWrite, ::FILE* FileToWrite);
 using AutoclosingFile = std::unique_ptr<::FILE, decltype(&::fclose)>;
@@ -24,8 +23,11 @@ int main() {
     }
 
     Buffer thesize;
-    protozero::write_varint(std::back_inserter(thesize), 3);
-    protozero::write_varint(std::back_inserter(thesize), 1);
+    {
+        protozero::pbf_writer headerpbf(thesize);
+        headerpbf.add_uint32(1, 1); // todo, write bundles
+
+    }
 
     writetoFile(thesize, testOutputFile.get());
     writetoFile(thebytes, testOutputFile.get());

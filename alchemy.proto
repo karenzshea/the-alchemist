@@ -10,7 +10,6 @@ message Line {
 
 message Header {
     required uint32 numLineBundles = 1;
-    required uint32 numLinesPerBundle = 2;
 }
 
 message LineBundle {
