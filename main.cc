@@ -42,14 +42,14 @@ int main() {
 
     {
         std::array<csv::Line, lines_per_bundle> unencodedLines;
-        bool end = false;
 
-        std::size_t i = 1;
+        std::size_t i = 0;
         csv::forEachLine(std::cin, [&](auto&& line) {
-            end = std::cin.eof();
-            std::cout << int(end);
-            if ((lines_per_bundle % i == 0) || (end))
+            if (i < 1000)
             {
+                unencodedLines[i] = line;
+                i++;
+            } else {
                 // encode chunked lines into messages, and write bundle to file
                 Buffer bundle;
                 {
@@ -63,11 +63,20 @@ int main() {
                 i = 0;
                 unencodedLines = {};
                 unencodedLines[i] = line;
-            } else {
-                unencodedLines[i] = line;
-                i++;
             }
         });
+        if (unencodedLines.size() > 0)
+        {
+            // encode chunked lines into messages, and write bundle to file
+            Buffer bundle;
+            {
+                protozero::pbf_writer bundlepbf(bundle);
+                for (int j = 0; unencodedLines.size(); ++j) {
+                    encodeLine(bundlepbf, unencodedLines[j]);
+                }
+            }
+            writetoFile(bundle, testOutputFile.get());
+        }
     }
 
 }
