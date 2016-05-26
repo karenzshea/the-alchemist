@@ -9,7 +9,7 @@ message Line {
 }
 
 message Header {
-    required uint32 numLineBundles = 1;
+    required fixed64 numLineBundles = 1;
 }
 
 message LineBundle {
