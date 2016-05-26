@@ -89,6 +89,7 @@ int main() {
         protozero::pbf_writer bundleCountpbf(bundle_count);
         bundleCountpbf.add_fixed64(1, bundle_i);
     }
-    fseek(testOutputFile.get(), 0, SEEK_SET);
+    int seek_code = fseek(testOutputFile.get(), 0, SEEK_SET);
+    if (seek_code != 0) std::quick_exit(EXIT_FAILURE);
     writetoFile(bundle_count, testOutputFile.get());
 }
