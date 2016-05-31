@@ -27,7 +27,6 @@ void writetoFile(const Buffer& bytes, ::FILE* FileToWrite)
     const auto count = ::fwrite(bytes.data(),
             sizeof(char), bytes.size(), FileToWrite);
     if (count != bytes.size()) std::quick_exit(EXIT_FAILURE);
-    ::puts("tada\n");
 }
 
 void writeHeader(const std::size_t bundle_count, ::FILE* FileToWrite)
@@ -49,7 +48,7 @@ int main() {
 
         std::size_t i = 0;
         csv::forEachLine(std::cin, [&](auto&& line) {
-            if (i < 1000)
+            if (i < lines_per_bundle)
             {
                 unencodedLines.push_back(line);
                 i++;
@@ -63,13 +62,14 @@ int main() {
                     }
                 }
                 // write header file with bundle size
-                writeHeader(unencodedLines.size(), testOutputFile.get());
+                writeHeader(bundle.size(), testOutputFile.get());
                 // write bundle to file
                 writetoFile(bundle, testOutputFile.get());
                 // reset
                 i = 0;
                 unencodedLines = {};
                 unencodedLines.push_back(line);
+                i++;
             }
         });
         if (unencodedLines.size() > 0)
@@ -83,7 +83,7 @@ int main() {
                 }
             }
             // write header file with bundle size
-            writeHeader(unencodedLines.size(), testOutputFile.get());
+            writeHeader(bundle.size(), testOutputFile.get());
             // write bundle to file
             writetoFile(bundle, testOutputFile.get());
         }
