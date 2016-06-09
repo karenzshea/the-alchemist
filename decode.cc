@@ -8,6 +8,8 @@
 #include <protozero/pbf_message.hpp>
 #include <protozero/varint.hpp>
 
+#include "mapping.h"
+
 using AutoclosingFile = std::unique_ptr<::FILE, decltype(&::fclose)>;
 void writetoFile(const std::string& bytes, ::FILE* FileToWrite)
 {
@@ -20,23 +22,14 @@ int main() {
     AutoclosingFile decodedFile(::fopen("out.csv", "wb"), &::fclose);
     if (!decodedFile) std::quick_exit(EXIT_FAILURE);
 
-    std::ifstream infile("out.pbf", std::ios::binary | std::ios::ate);
-    int infilesize = infile.tellg();
-    infile.seekg(0, std::ios::beg);
-    if (!infile.good()) {
-        std::perror("Reading file failed");
-        return EXIT_FAILURE;
-    }
-    std::string buffer;
-    buffer.resize(infilesize, ' ');
-    infile.read(const_cast<char*>(buffer.data()), infilesize);
+    auto infile = mapping::fromReadOnlyFile("out.pbf");
 
-    const char* end = buffer.c_str()+buffer.size();
-    const char* pos = buffer.c_str();
+    const char* end = reinterpret_cast<const char*>(infile.get_address())+infile.get_size();
+    const char* pos = reinterpret_cast<const char*>(infile.get_address());
 
     while (pos != end) {
         uint64_t chunksize = protozero::decode_varint(
-                &pos, buffer.data()+buffer.size());
+                &pos, end);
 
         protozero::pbf_reader bundle(pos, chunksize);
         while (bundle.next(1)) {
