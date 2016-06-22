@@ -38,6 +38,37 @@ void writeHeader(const std::size_t bundle_count, ::FILE* FileToWrite)
     writetoFile(buffer, FileToWrite);
 }
 
+Buffer encodeGroup(const std::vector<csv::Line>& unencodedLines)
+{
+    Buffer group;
+    {
+        protozero::pbf_writer groupPbf(group);
+        {
+            protozero::packed_field_uint64 fromNodes{groupPbf, 1};
+            for (const auto &line : unencodedLines) fromNodes.add_element(line.from);
+        }
+        {
+            protozero::packed_field_uint64 toNodes{groupPbf, 2};
+            for (const auto &line : unencodedLines) toNodes.add_element(line.to);
+        }
+        {
+            protozero::packed_field_uint32 speeds{groupPbf, 3};
+            for (const auto &line : unencodedLines) speeds.add_element(line.speed);
+        }
+    }
+    return group;
+}
+
+void writeMessageWithHeader(const std::vector<csv::Line>& LinesToWrite, ::FILE* FileToWrite)
+{
+    // encode chunked lines into packed fields
+    auto bundle = encodeGroup(LinesToWrite);
+    // write header file with bundle size
+    writeHeader(bundle.size(), FileToWrite);
+    // write bundle to file
+    writetoFile(bundle, FileToWrite);
+}
+
 int main() {
     AutoclosingFile testOutputFile(::fopen("out.pbf", "wb"), &::fclose);
     if (!testOutputFile.get()) std::quick_exit(EXIT_FAILURE);
@@ -45,6 +76,7 @@ int main() {
     // write repeated bundles from csv instream
     {
         std::vector<csv::Line> unencodedLines;
+        unencodedLines.reserve(lines_per_bundle);
 
         std::size_t i = 0;
         csv::forEachLine(std::cin, [&](auto&& line) {
@@ -53,39 +85,17 @@ int main() {
                 unencodedLines.push_back(line);
                 i++;
             } else {
-                // encode chunked lines into messages
-                Buffer bundle;
-                {
-                    protozero::pbf_writer bundlepbf(bundle);
-                    for (int j = 0; j < unencodedLines.size(); ++j) {
-                        encodeLine(bundlepbf, unencodedLines[j]);
-                    }
-                }
-                // write header file with bundle size
-                writeHeader(bundle.size(), testOutputFile.get());
-                // write bundle to file
-                writetoFile(bundle, testOutputFile.get());
+                writeMessageWithHeader(unencodedLines, testOutputFile.get());
                 // reset
                 i = 0;
-                unencodedLines = {};
+                unencodedLines.clear();
                 unencodedLines.push_back(line);
                 i++;
             }
         });
         if (unencodedLines.size() > 0)
         {
-            // encode chunked lines into messages
-            Buffer bundle;
-            {
-                protozero::pbf_writer bundlepbf(bundle);
-                for (int j = 0; j < unencodedLines.size(); ++j) {
-                    encodeLine(bundlepbf, unencodedLines[j]);
-                }
-            }
-            // write header file with bundle size
-            writeHeader(bundle.size(), testOutputFile.get());
-            // write bundle to file
-            writetoFile(bundle, testOutputFile.get());
+            writeMessageWithHeader(unencodedLines, testOutputFile.get());
         }
     }
 }

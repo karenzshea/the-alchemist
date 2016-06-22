@@ -2,16 +2,12 @@
 
 package speed;
 
-message Line {
-    required uint64 fromNode = 1;
-    required uint64 toNode = 2;
-    required uint32 speed = 3;
-}
-
 message Header {
-    required fixed64 numLineBundles = 1;
+    required uint64 GroupSizeInBytes = 1;
 }
 
-message LineBundle {
-    repeated Line lines = 1;
+message Group {
+    required repeated uint64 fromNodes = 1 [packed=true];
+    required repeated uint64 toNodes = 2 [packed=true];
+    required repeated uint32 speeds = 3 [packed=true];
 }
