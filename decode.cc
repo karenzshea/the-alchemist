@@ -9,6 +9,7 @@
 #include <protozero/pbf_reader.hpp>
 #include <protozero/varint.hpp>
 
+#include "bundle_limit.h"
 #include "csv.h"
 #include "mapping.h"
 #include "tags.h"
@@ -26,6 +27,7 @@ int main(int argc, const char *argv[]) {
     std::exit(0);
   }
 
+  // TODO parameterize out file as argv
   AutoclosingFile decodedFile(::fopen("out.csv", "wb"), &::fclose);
   if (!decodedFile)
     std::quick_exit(EXIT_FAILURE);
@@ -35,8 +37,7 @@ int main(int argc, const char *argv[]) {
   const auto *const end = reinterpret_cast<const char *>(infile.get_address()) + infile.get_size();
   const auto *pos = reinterpret_cast<const char *>(infile.get_address());
 
-  // TODO write lines_per_bundle into header file
-  std::vector<csv::Line> decodedLines(1000);
+  std::vector<csv::Line> decodedLines(bundle_limit::limit);
   while (pos != end) {
     uint64_t chunksize = protozero::decode_varint(&pos, end);
 

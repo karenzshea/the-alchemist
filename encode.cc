@@ -10,13 +10,12 @@
 #include <protozero/pbf_writer.hpp>
 #include <protozero/varint.hpp>
 
+#include "bundle_limit.h"
 #include "csv.h"
 #include "tags.h"
 
 using AutoclosingFile = std::unique_ptr<::FILE, decltype(&::fclose)>;
 using Buffer = std::string;
-
-const constexpr std::size_t lines_per_bundle = 1000;
 
 void writeBufferToFile(const Buffer &bytes, ::FILE *FileToWrite) {
   const auto count = ::fwrite(bytes.data(), sizeof(char), bytes.size(), FileToWrite);
@@ -84,20 +83,20 @@ int main(int _argc, char **_argv) {
   // write repeated bundles from csv instream
   {
     std::vector<csv::Line> unencodedLines;
-    unencodedLines.reserve(lines_per_bundle);
+    unencodedLines.reserve(bundle_limit::limit);
 
     std::size_t i = 0;
 
     csv::forEachLine(std::cin, [&](auto &&line) {
-      if (i < lines_per_bundle) {
+      if (i < bundle_limit::limit) {
         unencodedLines.push_back(line);
         i++;
       } else {
         writeMessageWithHeaderToFile(unencodedLines, testOutputFile.get());
         // reset
-        i = 0;
         unencodedLines.clear();
         unencodedLines.push_back(line);
+        i = 0;
         i++;
       }
     });
