@@ -1,18 +1,17 @@
 #pragma once
 
 #include <cstdint>
-#include <cstdlib>
 #include <cstdio>
+#include <cstdlib>
 
 #include <istream>
-#include <utility>
 #include <string>
+#include <utility>
 
 #include <boost/fusion/include/adapted.hpp>
 #include <boost/fusion/include/io.hpp>
 
 #include <boost/spirit/include/qi.hpp>
-
 
 namespace csv {
 struct Line {
@@ -26,11 +25,9 @@ using boost::fusion::operator<<;
 
 BOOST_FUSION_ADAPT_STRUCT(csv::Line, from, to, speed)
 
-
 // Takes a stream and a function that expects a Line as argument and runs the function for each csv line
 namespace csv {
-template <typename Fn>
-void forEachLine(std::istream& stream, Fn fn) {
+template <typename Fn> void forEachLine(std::istream &stream, Fn fn) {
   for (std::string line; std::getline(stream, line);) {
     auto it = begin(line);
     const auto last = end(line);

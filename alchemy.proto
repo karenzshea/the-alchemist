@@ -1,9 +1,12 @@
-// schema for csv to pbf schema
+// Schema for csv to pbf messages.
+// We are using Protozero, so this is for external libraries and / or documentation only.
+//
+// Note: if you modify, add or delete the tags below, adapt tags.h and your code.
 
 package speed;
 
 message Header {
-    required uint64 GroupSizeInBytes = 1;
+    required uint64 groupSizeInBytes = 1;
 }
 
 message Group {
