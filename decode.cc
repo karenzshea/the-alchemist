@@ -1,3 +1,4 @@
+#include <cassert>
 #include <cstdio>
 #include <fstream>
 #include <ios>
@@ -8,7 +9,9 @@
 #include <protozero/pbf_reader.hpp>
 #include <protozero/varint.hpp>
 
+#include "csv.h"
 #include "mapping.h"
+#include "tags.h"
 
 using AutoclosingFile = std::unique_ptr<::FILE, decltype(&::fclose)>;
 void writetoFile(const std::string &bytes, ::FILE *FileToWrite) {
@@ -29,36 +32,49 @@ int main(int argc, const char *argv[]) {
 
   auto infile = mapping::fromReadOnlyFile(argv[1]);
 
-  const auto *end = reinterpret_cast<const char *>(infile.get_address()) + infile.get_size();
+  const auto *const end = reinterpret_cast<const char *>(infile.get_address()) + infile.get_size();
   const auto *pos = reinterpret_cast<const char *>(infile.get_address());
 
+  // TODO write lines_per_bundle into header file
+  std::vector<csv::Line> decodedLines(1000);
   while (pos != end) {
     uint64_t chunksize = protozero::decode_varint(&pos, end);
 
     protozero::pbf_reader bundle(pos, chunksize);
-    while (bundle.next(1)) {
-      protozero::pbf_reader line = bundle.get_message();
-      uint64_t from, to;
-      uint32_t speed;
-      while (line.next()) {
-        switch (line.tag()) {
-        case 1:
-          from = line.get_uint64();
-          writetoFile(std::to_string(from) + ",", decodedFile.get());
-          break;
-        case 2:
-          to = line.get_uint64();
-          writetoFile(std::to_string(to) + ",", decodedFile.get());
-          break;
-        case 3:
-          speed = line.get_uint32();
-          writetoFile(std::to_string(speed) + "\n", decodedFile.get());
-          break;
-        default:
-          line.skip();
-        }
-      }
+
+    std::size_t fromNodesLength = 0;
+    bundle.next(tags::Group::fromNodes);
+    auto pi = bundle.get_packed_uint64();
+    for (auto it = pi.first; it != pi.second; ++it) {
+        decodedLines[fromNodesLength].from = *it;
+        fromNodesLength++;
     }
+
+    std::size_t toNodesLength = 0;
+    bundle.next(tags::Group::toNodes);
+    pi = bundle.get_packed_uint64();
+    for (auto it = pi.first; it != pi.second; ++it) {
+        decodedLines[toNodesLength].to = *it;
+        toNodesLength++;
+    }
+
+    std::size_t speedsLength = 0;
+    bundle.next(tags::Group::speeds);
+    pi = bundle.get_packed_uint64();
+    for (auto it = pi.first; it != pi.second; ++it) {
+        decodedLines[speedsLength].speed = *it;
+        speedsLength++;
+    }
+    assert(fromNodesLength == toNodesLength);
+    assert(toNodesLength == speedsLength);
+
+    decodedLines.resize(speedsLength);
+    for (const auto &line : decodedLines) {
+        writetoFile(std::to_string(line.from) + ",", decodedFile.get());
+        writetoFile(std::to_string(line.to) + ",", decodedFile.get());
+        writetoFile(std::to_string(line.speed) + "\n", decodedFile.get());
+    }
+
     pos += chunksize;
   }
 }
