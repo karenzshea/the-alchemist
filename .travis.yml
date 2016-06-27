@@ -1,0 +1,10 @@
+language: generic
+sudo: required
+dist: trusty
+
+install:
+  - 'bash deploy/install'
+
+script:
+  - 'mkdir -p build && cd build && cmake ..'
+  - 'cmake --build build'
