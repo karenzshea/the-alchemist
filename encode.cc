@@ -87,7 +87,7 @@ int main(int _argc, char **_argv) {
 
     std::size_t i = 0;
 
-    csv::forEachLine(std::cin, [&](auto &&line) {
+    csv::forEachLine(std::cin, [&](csv::Line &&line) {
       if (i < bundle_limit::limit) {
         unencodedLines.push_back(line);
         i++;

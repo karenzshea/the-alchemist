@@ -23,7 +23,7 @@ struct Line {
 using boost::fusion::operator<<;
 }
 
-BOOST_FUSION_ADAPT_STRUCT(csv::Line, from, to, speed)
+BOOST_FUSION_ADAPT_STRUCT(csv::Line, (std::uint64_t, from) (std::uint64_t, to) (std::uint32_t, speed))
 
 // Takes a stream and a function that expects a Line as argument and runs the function for each csv line
 namespace csv {

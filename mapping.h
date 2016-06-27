@@ -6,7 +6,7 @@
 namespace mapping {
 
 // Returns a read only mmaped file region on which you can call .get_address() and .get_size()
-inline auto fromReadOnlyFile(const std::string& file_path) {
+inline boost::interprocess::mapped_region fromReadOnlyFile(const std::string& file_path) {
   using namespace boost::interprocess;
 
   const file_mapping mapping{file_path.c_str(), read_only};
