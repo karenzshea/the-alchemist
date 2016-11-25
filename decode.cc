@@ -22,13 +22,14 @@ void writetoFile(const std::string &bytes, ::FILE *FileToWrite) {
 }
 
 int main(int argc, const char *argv[]) {
-  if (argc != 2) {
-    std::cout << "Usage: provide a pbf file to decode\n e.g.: " << argv[0] << " ./file.pbf" << std::endl;
+  if (argc != 3) {
+    std::cout << "Usage: provide a pbf file to decode and a file to write to\n e.g.: " << argv[0] << " ./file.pbf decoded.csv" << std::endl;
     std::exit(0);
   }
 
-  // TODO parameterize out file as argv
-  AutoclosingFile decodedFile(::fopen("out.csv", "wb"), &::fclose);
+  auto out_file = argv[2];
+
+  AutoclosingFile decodedFile(::fopen(out_file, "wb"), &::fclose);
   if (!decodedFile)
     std::quick_exit(EXIT_FAILURE);
 

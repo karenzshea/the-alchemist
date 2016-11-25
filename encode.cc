@@ -69,7 +69,7 @@ int main(int _argc, char **_argv) {
   const std::vector<std::string> args{_argv, _argv + _argc};
 
   if (args.size() != 2) {
-    ::fprintf(stderr, "Usage: %s outfile.pbf\n", args[0].c_str());
+    ::fprintf(stderr, "Usage: pipe a csv stream into %s outfile.pbf\n", args[0].c_str());
     ::quick_exit(EXIT_FAILURE);
   }
 

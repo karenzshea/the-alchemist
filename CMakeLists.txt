@@ -10,5 +10,5 @@ find_package(Boost 1.54 REQUIRED)
 
 add_executable(alchemy-write encode.cc)
 add_executable(alchemy-read decode.cc)
-target_include_directories(alchemy-write SYSTEM PRIVATE ${PROTOZERO_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
-target_include_directories(alchemy-read SYSTEM PRIVATE ${PROTOZERO_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
+target_include_directories(alchemy-write SYSTEM PRIVATE ${PROTOZERO_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/include/)
+target_include_directories(alchemy-read SYSTEM PRIVATE ${PROTOZERO_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/include/)
